@@ -96,8 +96,9 @@ ifconfig | grep -E "(wlan|mon)"
 
 ### Main Monitoring Script
 
-    1) Open the file `for_openwrt_wifi_router_files/root/counter.sh`
-    2) Edit it to fit your setup
+1. Open the file `for_openwrt_wifi_router_files/root/counter.sh`
+
+2. Edit it to fit your setup
 
 ```bash
 #!/bin/sh
@@ -107,9 +108,9 @@ SERVER_PORT="3085"           # REPLACE with the PORT of your server
 RECONNECT_DELAY=30           # Specify the pause (in seconds) - the time between reconnection attempts (in case the server is unavailable)
 ```
 
-    3) Connect to your router via ssh
-    4) Copy the content of the file `for_openwrt_wifi_router_files/root/counter.sh` (from the repository) to the `/root` folder on your router (it should result in `/root/counter.sh`)
-    5) Make the script executable: `chmod +x /root/counter.sh`
+3. Connect to your router via ssh
+4. Copy the content of the file `for_openwrt_wifi_router_files/root/counter.sh` (from the repository) to the `/root` folder on your router (it should result in `/root/counter.sh`)
+5. Make the script executable: `chmod +x /root/counter.sh`
 
 ### Creating an Autostart Service
 

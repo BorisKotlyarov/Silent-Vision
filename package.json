@@ -1,0 +1,17 @@
+{
+  "name": "silent-vision-server",
+  "version": "1.0.0",
+  "description": "Server for passive Wi-Fi monitoring system - analyzes probe requests from OpenWrt routers",
+  "author": {
+    "name": "Borys Kotliarov"
+  },
+  "disclaimer": "see DISCLAIMER.md & LICENCE files of this repository for details",
+  "license": "GPL-3.0-or-later",
+  "scripts": {
+    "start": "node src/index.js"
+  },
+  "dependencies": {
+    "express": "5.1.0",
+    "sqlite3": "5.1.7"
+  }
+}

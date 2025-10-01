@@ -1,0 +1,130 @@
+#!/bin/sh /etc/rc.common
+#
+# /etc/init.d/visitor_tracker - OpenWrt init script for passive Wi-Fi monitoring
+#
+# Copyright (C) 2025 Borys Kotliarov
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program. If not, see <https://www.gnu.org/licenses/>.
+#
+# ADDITIONAL DISCLAIMER: This software involves passive Wi-Fi monitoring.
+# See the DISCLAIMER file for important legal and ethical considerations
+# before use.
+#
+# Description: Service script for Silent Vision - passive Wi-Fi monitoring
+# system that analyzes probe requests from nearby devices without connection.
+
+START=99
+STOP=10
+
+CONFIG_SCRIPT="/root/counter.sh"
+LOG_FILE="/tmp/visitor_tracker.log"
+PID_FILE="/var/run/visitor_tracker.pid"
+
+start() {
+    echo "Starting visitor tracker..."
+    
+    # Wait for network and WiFi to be ready
+    sleep 20
+    
+    # Check and create monitor interface if needed
+    if ! iw dev | grep -q "mon0"; then
+        echo "Creating monitor interface mon0..."
+        iw phy phy0 interface add mon0 type monitor
+        ifconfig mon0 up
+        sleep 3
+    fi
+    
+    # Verify monitor interface
+    if iw dev mon0 info > /dev/null 2>&1; then
+        echo "Monitor interface mon0 is ready"
+    else
+        echo "ERROR: Failed to create monitor interface"
+        return 1
+    fi
+    
+    # Start the visitor tracker using BusyBox compatible method
+    if [ -f "$PID_FILE" ]; then
+        if ps | grep -q "^\s*$(cat "$PID_FILE")\s"; then
+            echo "Visitor tracker is already running (PID: $(cat "$PID_FILE"))"
+            return 0
+        else
+            rm -f "$PID_FILE"
+        fi
+    fi
+    
+    # Start in background and save PID
+    sh "$CONFIG_SCRIPT" > "$LOG_FILE" 2>&1 &
+    TRACKER_PID=$!
+    echo $TRACKER_PID > "$PID_FILE"
+    
+    # Verify it's running
+    sleep 2
+    if ps | grep -q "^\s*$TRACKER_PID\s"; then
+        echo "Visitor tracker started with PID: $TRACKER_PID"
+    else
+        echo "ERROR: Visitor tracker failed to start"
+        rm -f "$PID_FILE"
+        return 1
+    fi
+}
+
+stop() {
+    echo "Stopping visitor tracker..."
+    if [ -f "$PID_FILE" ]; then
+        PID=$(cat "$PID_FILE")
+        if ps | grep -q "^\s*$PID\s"; then
+            kill "$PID"
+            # Wait for process to terminate
+            for i in 1 2 3 4 5; do
+                if ! ps | grep -q "^\s*$PID\s"; then
+                    break
+                fi
+                sleep 1
+            done
+            # Force kill if still running
+            if ps | grep -q "^\s*$PID\s"; then
+                kill -9 "$PID"
+            fi
+            rm -f "$PID_FILE"
+            echo "Visitor tracker stopped"
+        else
+            echo "PID file exists but process not found"
+            rm -f "$PID_FILE"
+        fi
+    else
+        echo "Visitor tracker is not running"
+    fi
+}
+
+restart() {
+    stop
+    sleep 3
+    start
+}
+
+status() {
+    if [ -f "$PID_FILE" ]; then
+        PID=$(cat "$PID_FILE")
+        if ps | grep -q "^\s*$PID\s"; then
+            echo "Visitor tracker is running (PID: $PID)"
+            echo "=== Recent logs ==="
+            tail -10 "$LOG_FILE"
+        else
+            echo "PID file exists but process not found"
+            rm -f "$PID_FILE"
+        fi
+    else
+        echo "Visitor tracker is not running"
+    fi
+}

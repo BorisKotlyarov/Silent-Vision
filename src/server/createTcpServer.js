@@ -24,14 +24,8 @@
 // Create TCP server
 const net = require("net");
 const DatabaseQueue = require("../utils/DatabaseQueue");
+const formatMac = require("../utils/formatMac");
 const { MAX_RAW_LOGS, TCP_PORT } = require("../config");
-// Format MAC address to standard format (XX:XX:XX:XX:XX:XX)
-function formatMac(mac) {
-  if (!mac) return null;
-
-  const cleanMac = mac.replace(/:/g, "").toUpperCase();
-  return cleanMac.replace(/(.{2})(?=.)/g, "$1:");
-}
 
 // Extract data from tcpdump line
 function extractDataFromLine(line) {

@@ -20,7 +20,7 @@
  * See the LICENSE file for important legal and ethical considerations
  * before use.
  */
-
+const { MAX_RAW_LOGS } = require("../../../config");
 module.exports = function (req, res) {
   const { limit, offset } = req.pagination;
   const db = req.database;

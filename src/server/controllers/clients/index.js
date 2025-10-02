@@ -21,7 +21,7 @@ module.exports = function (req, res) {
    * See the LICENSE file for important legal and ethical considerations
    * before use.
    */
-
+  const formatMac = require("../../../utils/formatMac");
   const { mac } = req.params;
   const formattedMac = formatMac(mac);
   const { limit, offset } = req.pagination;
